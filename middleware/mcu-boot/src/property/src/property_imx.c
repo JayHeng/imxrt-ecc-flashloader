@@ -213,6 +213,10 @@ status_t bootloader_property_init(void)
     propertyStore->UniqueDeviceId.uid[1] = OCOTP->CFG1;
 #endif // K32H844P_SERIES
 
+#if BL_FEATURE_FLEXSPI_NOR_XECC_WRITE_ENABLE
+    propertyStore->isFlashXeccWriteEnabled = false;
+#endif
+    
     // Set address range of RAM in property interface
     const memory_map_entry_t *map = (memory_map_entry_t *)&g_bootloaderContext.memoryMap[kIndexSRAM];
     propertyStore->ramStartAddress[kPropertyIndex_SRAM] = map->startAddress;
@@ -336,6 +340,12 @@ status_t bootloader_property_get(uint8_t tag, uint32_t id, const void **value, u
             break;
 #endif // BL_FEATURE_RELIABLE_UPDATE
 
+#if BL_FEATURE_FLEXSPI_NOR_XECC_WRITE_ENABLE
+        case kPropertyTag_FlashXeccWriteState:
+            returnValue = &propertyStore->isFlashXeccWriteEnabled;
+            break;
+#endif // BL_FEATURE_FLEXSPI_NOR_XECC_WRITE_ENABLE
+            
         default:
             return kStatus_UnknownProperty;
     }
@@ -365,6 +375,15 @@ status_t bootloader_property_set_uint32(uint8_t tag, uint32_t value)
         case kPropertyTag_VerifyWrites:
             status = kStatus_ReadOnlyProperty;
             break;
+#if BL_FEATURE_FLEXSPI_NOR_XECC_WRITE_ENABLE
+        case kPropertyTag_FlashXeccWriteState:
+            if (value != 0 && value != 1)
+            {
+                return kStatus_InvalidPropertyValue;
+            }
+            propertyStore->isFlashXeccWriteEnabled = value;
+            return kStatus_Success;
+#endif
         case kPropertyTag_BootloaderVersion:
         case kPropertyTag_AvailablePeripherals:
         case kPropertyTag_RAMStartAddress:

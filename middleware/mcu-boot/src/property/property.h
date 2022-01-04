@@ -143,6 +143,7 @@ enum _property_tag
     kPropertyTag_ExternalMemoryAttributes = 0x19,
     kPropertyTag_ReliableUpdateStatus = 0x1a,
     kPropertyTag_FlashPageSize = 0x1b,
+    kPropertyTag_FlashXeccWriteState = 0x30,
     kPropertyTag_InvalidProperty = 0xFF,
 };
 
@@ -315,6 +316,7 @@ typedef struct PropertyStore
     uint32_t flashAccessSegmentCount[kFLASHCount]; //!< The count of flash access segment within flash module
     uint32_t flashReadMargin;                      //!< The margin level setting for flash erase and program Verify CMDs
     uint32_t qspiInitStatus;                       //!< Result of QSPI+OTFAD init during bootloader startup
+    uint32_t isFlashXeccWriteEnabled;
     reserved_region_t reservedRegions[kProperty_ReservedRegionsCount]; //!< Flash and Ram reserved regions.
     bootloader_configuration_data_t
         configurationData; //!< Configuration data from flash address 0x3c0-0x3ff in sector 0 (64 bytes max)

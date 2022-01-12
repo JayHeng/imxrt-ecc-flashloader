@@ -128,7 +128,8 @@ enum _property_tag
     kPropertyTag_VerifyWrites = 0x0a,
     kPropertyTag_MaxPacketSize = 0x0b,
     kPropertyTag_ReservedRegions = 0x0c,
-    kPropertyTag_Reserved13 = 0x0d,
+    //kPropertyTag_Reserved13 = 0x0d,
+    kPropertyTag_FlashXeccWriteState = 0x0d,
     kPropertyTag_RAMStartAddress = 0x0e,
     kPropertyTag_RAMSizeInBytes = 0x0f,
     kPropertyTag_SystemDeviceId = 0x10,
@@ -143,7 +144,6 @@ enum _property_tag
     kPropertyTag_ExternalMemoryAttributes = 0x19,
     kPropertyTag_ReliableUpdateStatus = 0x1a,
     kPropertyTag_FlashPageSize = 0x1b,
-    kPropertyTag_FlashXeccWriteState = 0x30,
     kPropertyTag_InvalidProperty = 0xFF,
 };
 

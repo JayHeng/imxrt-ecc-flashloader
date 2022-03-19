@@ -828,8 +828,19 @@ static bool flexspi_nor_memory_check(uint32_t start, uint8_t *data_to_check, uin
     while (length)
     {
         read_length = length < sizeof(s_flexspiNorContext.buffer) ? length : sizeof(s_flexspiNorContext.buffer);
-        uint32_t phy_address = flexspi_get_phy_address(start);
-        flexspi_nor_memory_read((uint32_t *)&buffer, phy_address, read_length);
+
+#if BL_FEATURE_FLEXSPI_NOR_XECC_WRITE_ENABLE
+        property_store_t *propertyStore = g_bootloaderContext.propertyInterface->store;
+        if (propertyStore->isFlashXeccWriteEnabled)
+        {
+            memcpy((void *)&buffer, (void *)start, read_length);
+        }
+        else
+#endif
+        {
+            uint32_t phy_address = flexspi_get_phy_address(start);
+            flexspi_nor_memory_read((uint32_t *)&buffer, phy_address, read_length);
+        }
 
         if (memcmp(buffer, data_to_check, read_length) != 0)
         {
@@ -1162,8 +1173,19 @@ static status_t flexspi_nor_memory_init(void)
 static status_t flexspi_nor_memory_page_program(uint32_t address, const uint32_t *src)
 {
     lock_acquire();
-    status_t status = flexspi_nor_flash_page_program(FLEXSPI_NOR_INSTANCE, &s_flexspiNorConfigBlock,
-                                                     flexspi_get_phy_address(address), src);
+    status_t status;
+#if BL_FEATURE_FLEXSPI_NOR_XECC_WRITE_ENABLE
+    property_store_t *propertyStore = g_bootloaderContext.propertyInterface->store;
+    if (propertyStore->isFlashXeccWriteEnabled)
+    {
+        status = flexspi_nor_flash_page_ahb_write(FLEXSPI_NOR_INSTANCE, &s_flexspiNorConfigBlock, address, src);
+    }
+    else
+#endif
+    {
+        status = flexspi_nor_flash_page_program(FLEXSPI_NOR_INSTANCE, &s_flexspiNorConfigBlock,
+                                                flexspi_get_phy_address(address), src);
+    }
     lock_release();
 
     return status;

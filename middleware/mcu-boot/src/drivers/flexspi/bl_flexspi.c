@@ -492,6 +492,7 @@ status_t flexspi_config_flash_control_registers(uint32_t instance, flexspi_mem_c
             else
             {
                 temp |= FLEXSPI_FLSHCR2_AWRSEQID(CMD_LUT_SEQ_IDX_WRITE);
+                temp |= FLEXSPI_FLSHCR2_AWRWAITUNIT(0x0) | FLEXSPI_FLSHCR2_AWRWAIT(0x0);
             }
             base->FLSHCR2[index] = temp;
         }

@@ -20,6 +20,7 @@
 #include "memory.h"
 #include "microseconds.h"
 #include "normal_memory.h"
+#include "bl_xecc.h"
 
 #if BL_FEATURE_FLEXSPI_NOR_MODULE
 
@@ -216,6 +217,42 @@ uint32_t flexspi_nor_get_amba_addr()
     return FLASH_AMBA_BASE;
 #endif // BL_FEATURE_FLEXSPI_NOR_MODULE_PERIPHERAL_INSTANCE_RUNTIME_SEL
 }
+
+#if BL_FEATURE_FLEXSPI_NOR_XECC_WRITE_ENABLE
+void init_flexspi_nor_xecc(uint32_t start, uint32_t end)
+{
+    uint32_t instance = flexspi_nor_get_instance();
+    //FLEXSPI_Type *base = flexspi_get_module_base(instance);
+
+    xecc_config_t config;
+    XECC_GetDefaultConfig(&config);
+
+    uint32_t aligned_start = ALIGN_DOWN(start, BL_FEATURE_FLEXSPI_NOR_XECC_REGION_UNIT);
+    uint32_t aligned_end = ALIGN_UP(end, BL_FEATURE_FLEXSPI_NOR_XECC_REGION_UNIT);
+
+    config.enableXECC     = true;
+    config.enableWriteECC = true;
+    config.enableReadECC  = true;
+
+    config.Region0BaseAddress = aligned_start;
+    config.Region0EndAddress  = aligned_end;
+
+    switch (instance)
+    {
+        case 2:
+          {
+              XECC_Init(XECC_FLEXSPI2, &config);
+              break;
+          }
+        case 1:
+        default:
+          {
+              XECC_Init(XECC_FLEXSPI1, &config);
+              break;
+          }
+    }
+}
+#endif
 
 #if BL_FEATURE_GEN_KEYBLOB
 static status_t check_update_keyblob_info(void *config)

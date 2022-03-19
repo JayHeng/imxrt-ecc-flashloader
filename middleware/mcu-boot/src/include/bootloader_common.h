@@ -317,6 +317,10 @@ uint32_t get_primary_boot_device(void);
 //!@brief Get the hab status.
 habstatus_option_t get_hab_status();
 
+#if BL_FEATURE_FLEXSPI_NOR_XECC_WRITE_ENABLE
+void init_flexspi_nor_xecc(uint32_t start, uint32_t end);
+#endif
+
 #if BL_FEATURE_PHANTOM_UPDATE
 //! @brief Update flash_size and RAM_size based on SIM IFR
 void phantom_update(void);

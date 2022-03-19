@@ -375,6 +375,7 @@
                     <state>$PROJ_DIR$/../../../../../../middleware/mcu-boot/src/drivers/usdhc</state>
                     <state>$PROJ_DIR$/../../../../../../components/lists</state>
                     <state>$PROJ_DIR$/../../../../../../middleware/usb/phy</state>
+                    <state>$PROJ_DIR$/../../../../../../middleware/mcu-boot/src/drivers/xecc</state>
                 </option>
                 <option>
                     <name>CCStdIncCheck</name>
@@ -1533,6 +1534,15 @@
                 </file>
                 <file>
                     <name>$PROJ_DIR$\..\..\..\..\..\..\middleware\mcu-boot\src\drivers\usdhc\bl_usdhc.h</name>
+                </file>
+            </group>
+            <group>
+                <name>xecc</name>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\middleware\mcu-boot\src\drivers\xecc\bl_xecc.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\..\..\..\middleware\mcu-boot\src\drivers\xecc\bl_xecc.h</name>
                 </file>
             </group>
         </group>

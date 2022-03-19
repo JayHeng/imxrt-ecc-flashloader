@@ -431,6 +431,11 @@ static status_t prepare_0_4_4_mode_enable_sequence(uint32_t instance,
 #endif // FLEXSPI_ENABLE_NO_CMD_MODE_SUPPORT
 
 /*******************************************************************************
+ * Prototype
+ ******************************************************************************/
+extern uint32_t flexspi_nor_get_amba_addr();
+
+/*******************************************************************************
  * Code
  *******************************************************************************/
 
@@ -677,6 +682,81 @@ void flexspi_change_serial_clock(uint32_t instance, flexspi_nor_config_t *config
 
     } while (0);
 }
+
+#if BL_FEATURE_FLEXSPI_NOR_XECC_WRITE_ENABLE
+// See flexspi_nor_flash.h for more details
+status_t flexspi_nor_flash_page_ahb_write(uint32_t instance,
+                                          flexspi_nor_config_t *config,
+                                          uint32_t dstAddr,
+                                          const uint32_t *src)
+{
+    status_t status;
+    flexspi_mem_config_t *memCfg = (flexspi_mem_config_t *)config;
+    uint32_t remainingSize = config->pageSize;
+    uint32_t writeAddress = dstAddr;
+    uint32_t dstPhyAddr = dstAddr - flexspi_nor_get_amba_addr();
+
+#if !FLEXSPI_FEATURE_HAS_PARALLEL_MODE
+    bool isParallelMode = false;
+#else
+    bool isParallelMode = flexspi_is_parallel_mode(memCfg);
+#endif // FLEXSPI_FEATURE_HAS_PARALLEL_MODE
+
+    // Update serial clock for IP command, for some devices, it cannot erase/program the
+    // device with the highest clock for read.
+    flexspi_change_serial_clock(instance, config, kFlexSpiSerialClk_Update);
+
+    uint32_t seqNum = 1;
+    uint32_t seqId = NOR_CMD_LUT_SEQ_IDX_PAGEPROGRAM;
+    if (memCfg->lutCustomSeqEnable && memCfg->lutCustomSeq[NOR_CMD_INDEX_PAGEPROGRAM].seqNum)
+    {
+        seqId = memCfg->lutCustomSeq[NOR_CMD_INDEX_PAGEPROGRAM].seqId;
+        seqNum = memCfg->lutCustomSeq[NOR_CMD_INDEX_PAGEPROGRAM].seqNum;
+    }
+    flexspi_update_lut(instance, seqId, &config->memConfig.lookupTable[4 * seqId], seqNum);
+
+    while (remainingSize)
+    {
+        // Send write enable before executing page program command
+        status = flexspi_nor_write_enable(instance, config, isParallelMode, dstPhyAddr);
+        if (status != kStatus_Success)
+        {
+            break;
+        }
+
+        uint32_t cpyBytes = 0;
+        if (remainingSize >= 8)      { cpyBytes = 8; }
+        else if (remainingSize >= 4) { cpyBytes = 4; }
+        else                         { cpyBytes = remainingSize; }
+        memcpy((void *)writeAddress, (void *)src, cpyBytes);
+
+        // Wait until the program operation completes on Serial NOR Flash side.
+        status = flexspi_nor_wait_busy(instance, config, isParallelMode, dstPhyAddr);
+        if (status != kStatus_Success)
+        {
+            break;
+        }
+
+        writeAddress += cpyBytes;
+        src += cpyBytes / 4;
+        remainingSize -= cpyBytes;
+    }
+
+#if FLEXSPI_ENABLE_NO_CMD_MODE_SUPPORT
+    if (config->needRestoreNoCmdMode)
+    {
+        status = flexspi_nor_restore_no_cmd_mode(instance, config, isParallelMode, dstPhyAddr);
+    }
+#endif
+
+    flexspi_clear_cache(instance);
+
+    // Restore clock for AHB command
+    flexspi_change_serial_clock(instance, config, kFlexSpiSerialClk_Restore);
+
+    return status;
+}
+#endif
 
 #if (!BL_FEATURE_HAS_FLEXSPI_NOR_ROMAPI) || (!ROM_API_HAS_FELXSPI_NOR_PROGRAM)
 // See flexspi_nor_flash.h for more details

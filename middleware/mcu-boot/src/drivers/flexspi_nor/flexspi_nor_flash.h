@@ -224,6 +224,14 @@ extern "C"
     //!@brief Initialize Serial NOR devices via FlexSPI
     status_t flexspi_nor_flash_init(uint32_t instance, flexspi_nor_config_t *config);
 
+#if BL_FEATURE_FLEXSPI_NOR_XECC_WRITE_ENABLE
+    //!@brief Program data to Serial NOR via FlexSPI AHB bus
+    status_t flexspi_nor_flash_page_ahb_write(uint32_t instance,
+                                              flexspi_nor_config_t *config,
+                                              uint32_t dstAddr,
+                                              const uint32_t *src);
+#endif
+    
     //!@brief Program data to Serial NOR via FlexSPI
     status_t flexspi_nor_flash_page_program(uint32_t instance,
                                             flexspi_nor_config_t *config,

@@ -725,8 +725,8 @@ status_t flexspi_nor_flash_page_ahb_write(uint32_t instance,
         }
 
         uint32_t cpyBytes = 0;
-        if (remainingSize >= 8)      { cpyBytes = 8; }
-        else if (remainingSize >= 4) { cpyBytes = 4; }
+        /* if (remainingSize >= 8)      { cpyBytes = 8; }
+        else */ if (remainingSize >= 4) { cpyBytes = 4; }
         else                         { cpyBytes = remainingSize; }
         memcpy((void *)writeAddress, (void *)src, cpyBytes);
 

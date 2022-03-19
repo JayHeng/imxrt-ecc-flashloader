@@ -252,6 +252,25 @@ void init_flexspi_nor_xecc(uint32_t start, uint32_t end)
           }
     }
 }
+
+void deinit_flexspi_nor_xecc(void)
+{
+    uint32_t instance = flexspi_nor_get_instance();
+    switch (instance)
+    {
+        case 2:
+          {
+              XECC_Deinit(XECC_FLEXSPI2);
+              break;
+          }
+        case 1:
+        default:
+          {
+              XECC_Deinit(XECC_FLEXSPI1);
+              break;
+          }
+    }
+}
 #endif
 
 #if BL_FEATURE_GEN_KEYBLOB

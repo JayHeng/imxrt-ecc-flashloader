@@ -701,22 +701,17 @@ void handle_write_memory(uint8_t *packet, uint32_t packetLength)
     write_memory_packet_t *command = (write_memory_packet_t *)packet;
 
 #if BL_FEATURE_FLEXSPI_NOR_XECC_WRITE_ENABLE
-    static bool isXeccInitialized = false;
-    if (!isXeccInitialized)
+    const memory_map_entry_t *mapEntry;
+    status_t status = find_map_entry(command->startAddress, command->byteCount, &mapEntry);
+    if (status == kStatus_Success)
     {
-        const memory_map_entry_t *mapEntry;
-        status_t status = find_map_entry(command->startAddress, command->byteCount, &mapEntry);
-        if (status == kStatus_Success)
+        property_store_t *propertyStore = g_bootloaderContext.propertyInterface->store;
+        if ((mapEntry->memoryId == kMemoryFlexSpiNor) && propertyStore->isFlashXeccWriteEnabled)
         {
-            property_store_t *propertyStore = g_bootloaderContext.propertyInterface->store;
-            if ((mapEntry->memoryId == kMemoryFlexSpiNor) && propertyStore->isFlashXeccWriteEnabled)
-            {
-                uint32_t aligned_start = ALIGN_DOWN(command->startAddress, BL_FEATURE_FLEXSPI_NOR_XECC_REGION_UNIT);
-                uint32_t aligned_end = ALIGN_UP(command->startAddress + command->byteCount, BL_FEATURE_FLEXSPI_NOR_XECC_REGION_UNIT);
-                aligned_end = (aligned_end - aligned_start) * 2 + aligned_start;
-                init_flexspi_nor_xecc(aligned_start, aligned_end);
-                isXeccInitialized = true;
-            }
+            uint32_t aligned_start = ALIGN_DOWN(command->startAddress, BL_FEATURE_FLEXSPI_NOR_XECC_REGION_UNIT);
+            uint32_t aligned_end = ALIGN_UP(command->startAddress + command->byteCount, BL_FEATURE_FLEXSPI_NOR_XECC_REGION_UNIT);
+            aligned_end = (aligned_end - aligned_start) * 2 + aligned_start;
+            init_flexspi_nor_xecc(aligned_start, aligned_end);
         }
     }
 #endif

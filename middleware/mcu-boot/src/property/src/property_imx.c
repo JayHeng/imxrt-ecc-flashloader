@@ -381,6 +381,10 @@ status_t bootloader_property_set_uint32(uint8_t tag, uint32_t value)
             {
                 return kStatus_InvalidPropertyValue;
             }
+            else if (value == 0)
+            {
+                deinit_flexspi_nor_xecc();
+            }
             propertyStore->isFlashXeccWriteEnabled = value;
             return kStatus_Success;
 #endif

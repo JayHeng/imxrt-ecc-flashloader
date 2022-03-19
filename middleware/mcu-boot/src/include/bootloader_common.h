@@ -319,6 +319,7 @@ habstatus_option_t get_hab_status();
 
 #if BL_FEATURE_FLEXSPI_NOR_XECC_WRITE_ENABLE
 void init_flexspi_nor_xecc(uint32_t start, uint32_t end);
+void deinit_flexspi_nor_xecc(void);
 #endif
 
 #if BL_FEATURE_PHANTOM_UPDATE

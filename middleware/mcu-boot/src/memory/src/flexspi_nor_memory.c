@@ -841,8 +841,20 @@ static bool is_flexspi_nor_mem_erased(uint32_t start, uint32_t length)
     {
         uint32_t readBuffer[kFlexSpiNorMemory_MaxPageSize / sizeof(uint32_t)];
         read_length = length < sizeof(readBuffer) ? length : sizeof(readBuffer);
-        uint32_t phy_address = flexspi_get_phy_address(start);
-        flexspi_nor_memory_read(readBuffer, phy_address, read_length);
+
+#if BL_FEATURE_FLEXSPI_NOR_XECC_WRITE_ENABLE
+        property_store_t *propertyStore = g_bootloaderContext.propertyInterface->store;
+        if (propertyStore->isFlashXeccWriteEnabled)
+        {
+            // Can not check blank for ECC case, just return true here
+            return true;
+        }
+        else
+#endif
+        {
+            uint32_t phy_address = flexspi_get_phy_address(start);
+            flexspi_nor_memory_read(readBuffer, phy_address, read_length);
+        }
         uint32_t *buf_32 = &readBuffer[0];
         for (uint32_t i = 0; i < read_length / 4; i++)
         {

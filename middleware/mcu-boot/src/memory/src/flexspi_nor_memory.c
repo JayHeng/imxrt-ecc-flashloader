@@ -888,6 +888,7 @@ static bool is_flexspi_nor_mem_erased(uint32_t start, uint32_t length)
     return is_erased;
 }
 
+#pragma optimize = none
 static bool flexspi_nor_memory_check(uint32_t start, uint8_t *data_to_check, uint32_t length)
 {
     uint32_t buffer[kFlexSpiNorMemory_MaxPageSize / sizeof(uint32_t)];
